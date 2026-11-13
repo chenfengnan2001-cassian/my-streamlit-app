@@ -1,14 +1,32 @@
-import streamlit as st
-from transformers import pipeline
 
-# Load the text classification model
-classifier = pipeline(
-    "text-classification",
-    model="distilbert/distilbert-base-uncased-finetuned-sst-2-english",
-    return_all_scores=True
+import streamlit as st
+from transformers import (
+    AutoTokenizer,
+    AutoModelForSequenceClassification,
+    pipeline
 )
 
-# Streamlit application
+@st.cache_resource
+def load_classifier():
+    model_name = "distilbert/distilbert-base-uncased-finetuned-sst-2-english"
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_name,
+        low_cpu_mem_usage=False
+    )
+
+    classifier = pipeline(
+        "text-classification",
+        model=model,
+        tokenizer=tokenizer,
+        device=-1
+    )
+
+    return classifier
+
+
 st.title("Text Classification for you")
 st.write("Enter your text below to classify its sentiment.")
 
@@ -16,12 +34,12 @@ text = st.text_area("Enter the text to classify", "")
 
 if st.button("Classify"):
     if text.strip():
-        results = classifier(text)[0]
-
-        max_result = max(results, key=lambda x: x["score"])
+        with st.spinner("Classifying..."):
+            classifier = load_classifier()
+            result = classifier(text)[0]
 
         st.write("Text:", text)
-        st.write("Label:", max_result["label"])
-        st.write("Score:", max_result["score"])
+        st.write("Label:", result["label"])
+        st.write("Score:", result["score"])
     else:
         st.warning("Please enter some text first.")
