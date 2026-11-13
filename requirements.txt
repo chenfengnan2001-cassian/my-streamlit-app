@@ -1,5 +1,7 @@
 
+
 streamlit
 torch==2.5.1
 transformers==4.46.3
-safetensors
+tokenizers==0.20.3
+safetensors==0.4.5
