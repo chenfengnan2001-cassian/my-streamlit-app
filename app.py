@@ -1,10 +1,18 @@
 
 import streamlit as st
-from transformers import (
-    AutoTokenizer,
-    AutoModelForSequenceClassification,
-    pipeline
-)
+
+# Import model components directly
+try:
+    import transformers
+    from transformers.models.auto.tokenization_auto import AutoTokenizer
+    from transformers.models.auto.modeling_auto import AutoModelForSequenceClassification
+    from transformers.pipelines import pipeline
+
+except Exception as e:
+    st.error("Failed to import Transformers components.")
+    st.exception(e)
+    st.stop()
+
 
 @st.cache_resource
 def load_classifier():
@@ -34,7 +42,7 @@ text = st.text_area("Enter the text to classify", "")
 
 if st.button("Classify"):
     if text.strip():
-        with st.spinner("Classifying..."):
+        with st.spinner("Loading model and classifying..."):
             classifier = load_classifier()
             result = classifier(text)[0]
 
